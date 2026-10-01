@@ -4,17 +4,22 @@ from pathlib import Path
 import fitz
 
 
-def extract_text_from_pdf(file_path: str) -> str:
+def extract_pages_from_pdf(file_path: str) -> list[tuple[int, str]]:
     doc = fitz.open(file_path)
-    text_chunks = []
+    pages: list[tuple[int, str]] = []
 
-    for page in doc:
+    for page_number, page in enumerate(doc, start=1):
         text = page.get_text("text")
-        if text:
-            text_chunks.append(text)
+        if text and text.strip():
+            pages.append((page_number, text))
 
     doc.close()
-    return "\n\n".join(text_chunks)
+    return pages
+
+
+def extract_text_from_pdf(file_path: str) -> str:
+    pages = extract_pages_from_pdf(file_path)
+    return "\n\n".join(page_text for _, page_text in pages)
 
 
 def ensure_upload_dirs(base_dir: str) -> str:
